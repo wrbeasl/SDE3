@@ -1,0 +1,2 @@
+printImage(+Image) :-
+		write(+Image).
