@@ -1,29 +1,24 @@
 /*
-
-
 CPSC 3520
-Summer 2, 2014
-Software Development Exercise #1
+Spring 2015
+Software Development Exercise #3
 motion.pro
 */
 
 diffEl(X, Y, A) :- A is (Y - X).
 
 diffRow([],[],[]).
-
 diffRow([A|B], [C|D], [X|Y]) :- 
 	diffEl(A,C,X),
 	diffRow(B,D,Y).
 
 diffIm([],[],[]).
-
 diffIm([[E|F]|G], [[H|I]|J], [[R|S]|T]) :-
 	diffEl(E,H,R),
 	diffRow(F,I,S),
 	diffIm(G,J,T).
 
 printImage([]) :- nl.
-
 printImage([R1|RN]) :- printImage(R1),
 	nl, nl,
 	printImage(RN).
@@ -71,26 +66,40 @@ mask([Im1R|Im1T],[Im2R|Im2T],[DifR|DifT],[M1R|M1T],[M2R|M2T]) :-
 	rowmask(Im1R,Im2R,DifR,M1R,M2R),
 	mask(Im1T,Im2T,DifT,M1T,M2T).
 
-centImRow([],0) :- fail.
-sumImRow([], Acc, Acc) :- fail.
-sumImRow([Im1R|Im1T], StartJ, Sum) :-
-	/*write(StartJ), write(' '),write(Sum), write(' '),*/
-	Index is StartJ+1,
-	SubTotal is Im1R * Index,
-	sumImRow(Im1T, Index, SubTotal),
-	Sum is Sum.
+centRow([], _, X) :-
+   X is 0.
 
-centImRow([Im1R|Im1T], StartJ, CIR) :-
-	sumImRow(Im1R, StartJ, CIR),
-	centImRow(Im1T, StartJ, CIR1),
-	CIR is CIR1.
+centRow([IH|IT], J, CIR) :-
+   Value is (J * IH),
+   Index is (J + 1),
+   centRow(IT, Index, Val),
+   CIR is (Value + Val).
 
-centImCol([],0) :- fail.
 
-centImCol([Im1R|Im1T], StartI, CIS) :-
-	/*write(Im1R),*/
-	write(StartI),
-	cenImCol(ImIT, StartI, CIS).
+centImRow([], _, X) :-
+   X is 0.
+
+centImRow([IH|IT], J, CIR) :-
+   centRow(IH, J, Row),
+   centImRow(IT, J, Rest),
+   CIR is (Row + Rest).
+
+centCol([], _, X) :-
+   X is 0.
+
+centCol([IH|IT], J, CIR) :-
+   Value is (J * IH),
+   centCol(IT, J, Val),
+   CIR is (Value + Val).
+
+centImCol([], _, X) :-
+   X is 0.
+
+centImCol([IH|IT], J, CIR) :-
+   centCol(IH, J, Row),
+   Index is (J + 1),
+   centImCol(IT, Index, Rest),
+   CIR is (Row + Rest).
 
 
 motion([],[],_,_) :- fail, !.
@@ -101,10 +110,25 @@ motion(Image1, Image2,_,_) :-
 	nl,
 	! .
 
+motion([],[],_,X) :- X is 0.
+motion([],[],X,_) :- X is 0.
+motion([],[],X,Y) :- X is 0, Y is 0.
+
 motion(Image1, Image2, Moti, Motj) :-
 	diffIm(Image1, Image2, Diff),
 	mask(Image1, Image2, Diff, M1, M2),
-	centImRow(M1, R1, C1),
-	centImCol(M2, R2, C2),
-	Moti is (R2 - R1),
-	Motj is (C2 - C1).
+	centImRow(M1, 1, C1), /* j1 */
+	centImCol(M2, 1, C2), /* i2 */
+	centImCol(M1, 1, C3), /* i1 */
+	centImRow(M2, 1, C4), /* j2 */
+	write(C1),
+	nl,
+	write(C2),
+	nl,
+	write(C3),
+	nl,
+	write(C4),
+	nl,
+	Moti is C2-C1,
+	Motj is C4-C1
+	.
