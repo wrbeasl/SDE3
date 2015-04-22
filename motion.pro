@@ -118,9 +118,9 @@ motion(Image1, Image2, Moti, Motj) :-
 	diffIm(Image1, Image2, Diff),
 	mask(Image1, Image2, Diff, M1, M2),
 	centImRow(M1, 1, C1), /* j1 */
-	centImCol(M2, 1, C2), /* i2 */
+	centImRow(M2, 1, C2), /* j2 */
 	centImCol(M1, 1, C3), /* i1 */
-	centImRow(M2, 1, C4), /* j2 */
+	centImCol(M2, 1, C4), /* i2 */
 	write(C1),
 	nl,
 	write(C2),
@@ -129,6 +129,6 @@ motion(Image1, Image2, Moti, Motj) :-
 	nl,
 	write(C4),
 	nl,
-	Moti is C2-C1,
-	Motj is C4-C1
+	Moti is C4-C3,
+	Motj is C2-C1
 	.
