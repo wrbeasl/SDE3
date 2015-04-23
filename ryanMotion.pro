@@ -6,18 +6,12 @@ printRow([A|B]) :-
    write(' '),
    printRow(B).
 
-printImage([]).
+printImage([]) :-
+   nl.
 
 printImage([X|Y]) :-
    printRow(X),
    printImage(Y).
-
-
-image_1Sample([[1,2,3,4,5],[6,7,8,9,8],[7,6,5,4,3],[2,1,2,3,4]]).
-
-image_2Sample([[9,8,7,6,5],[4,3,2,1,2],[3,4,5,6,7],[8,9,8,7,6]]).
-
-image_3Sample([[9,8,7,6,5],[4,3,2,1,2],[3,4,5,6,7],[8,9,8,7,6]]).
 
 diffImRow([], [], []).
 
@@ -47,26 +41,30 @@ isDiff(A, B) :-
    diffIm(A,B,DiffIm),
    not(isDiff_image(DiffIm)).
 
+rowmask([], [], [], [], []) :- !.
 
 rowmask([_|I1T], [I2H|I2T], [D1H|D1T], [M1H|M1T], [M2H|M2T]) :-
    D1H > 0,
    M1H is 0,
    M2H is I2H,
-   rowmask(I1T, I2T, D1T, M1T, M2T).
+   rowmask(I1T, I2T, D1T, M1T, M2T),
+   !.
 
 rowmask([I1H|I1T], [_|I2T], [D1H|D1T], [M1H|M1T], [M2H|M2T]) :-
    D1H < 0,
    M1H is I1H,
    M2H is 0,
-   rowmask(I1T, I2T, D1T, M1T, M2T).
+   rowmask(I1T, I2T, D1T, M1T, M2T),
+   !.
 
 rowmask([_|I1T], [_|I2T], [D1H|D1T], [M1H|M1T], [M2H|M2T]) :-
    D1H =:= 0,
    M1H is 0,
    M2H is 0,
-   rowmask(I1T, I2T, D1T, M1T, M2T).
+   rowmask(I1T, I2T, D1T, M1T, M2T),
+   !.
 
-mask([], [], [], _, _).
+mask([], [], [], [], []) :- !.
 
 mask([I1H|I1T], [I2H|I2T], [D1H|D1T], [M1H|M1T], [M2H|M2T]) :-
    rowmask(I1H, I2H, D1H, M1H, M2H),
@@ -106,3 +104,38 @@ centImCol([IH|IT], J, CIR) :-
    Index is (J + 1),
    centImCol(IT, Index, Rest),
    CIR is (Row + Rest).
+
+sumRow([], X) :-
+   X is 0.
+
+sumRow([H|T], Sum) :-
+   sumRow(T, Val),
+   Sum is (H + Val).
+
+sumImage([], X) :-
+   X is 0.
+
+sumImage([H|T], Sum) :-
+   sumRow(H, Row),
+   sumImage(T, Rest),
+   Sum is (Row + Rest).
+
+motion(I1, I2, _, _) :-
+   not(isDiff(I1, I2)),
+   write('***** No Motion in This Case *****'),
+   nl,
+   !.
+
+motion(I1, I2, Moti, Motj) :-
+   isDiff(I1, I2),
+   diffIm(I1, I2, Diff),
+   mask(I1, I2, Diff, I1M, I2M),
+   sumImage(I1M, Sum1),
+   sumImage(I2M, Sum2),
+   centImCol(I1M, 1, C1),
+   centImCol(I2M, 1, C2),
+   centImRow(I1M, 1, R1),
+   centImRow(I2M, 1, R2),
+   Motj is (R2/Sum2 - R1/Sum1),
+   Moti is (C2/Sum2 - C1/Sum1),
+   !.
